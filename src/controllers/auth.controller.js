@@ -18,11 +18,10 @@ async function registerUser(req,res) {
         
     }
 
-    const hash=await bcrypt.hash(password,10)
     const user=await userModel.create({
         username,
         email,
-        password:hash,
+        password,
         role
     })
 
@@ -55,12 +54,12 @@ async function loginUser(req,res){
             {username},
             {email}
         ]
-    })
+    }).select('+password')
     if(!user){
         return res.status(401).json({message:'invalid credentials'})
     }
 
-    const isPasswordValid=await bcrypt.compare(password,user.password)
+    const isPasswordValid=await user.comparePassword(password)
 
     if(!isPasswordValid){
         return res.status(401).json({message:'invalid credentials'})
